@@ -1,5 +1,6 @@
 package com.example.demo.security;
 
+import com.auth0.jwt.JWT;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Date;
 
+import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -38,8 +41,13 @@ public class JWTAuthenticationVerificationFilterTest {
         HttpServletResponse res = Mockito.mock(HttpServletResponse.class);
         FilterChain chain = Mockito.mock(FilterChain.class);
 
+        String token = SecurityConstants.TOKEN_PREFIX + JWT.create()
+                .withSubject("testuser")
+                .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                .sign(HMAC512(SecurityConstants.SECRET.getBytes()));
+
         Mockito.when(req.getHeader(Mockito.anyString()))
-                .thenReturn("BearereyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxNjI3NzczNjkyfQ.y9Yr7HwGT7eCYEvPjmiE14eQTX-_hFUgFdsy7__dS3EsYYXkyrsnh5kFUNKuezrusyEbg6FBvgWKvA2u7EcgMQ");
+                .thenReturn(token);
 
         jwtAuthenticationVerificationFilter.doFilterInternal(req, res, chain);
 
