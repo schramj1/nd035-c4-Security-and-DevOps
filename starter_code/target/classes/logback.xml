@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG" value="/Users/Jonathan/Documents/Udacity Projects/Lesson 4 Final/nd035-c4-Security-and-DevOps/starter_code/src"/>
+
+    <appender name="appender" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG}/log/sareeta-app.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="appender"/>
+    </root>
+</configuration>

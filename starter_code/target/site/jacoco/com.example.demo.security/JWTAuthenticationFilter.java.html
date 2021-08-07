@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JWTAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">auth-course</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.security</a> &gt; <span class="el_source">JWTAuthenticationFilter.java</span></div><h1>JWTAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.example.demo.security;
+
+import com.example.demo.model.persistence.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import com.auth0.jwt.JWT;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+
+import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
+
+public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    AuthenticationManager authenticationManager;
+
+<span class="fc" id="L26">    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {</span>
+<span class="fc" id="L27">        this.authenticationManager = authenticationManager;</span>
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest req,
+                                                HttpServletResponse res) throws AuthenticationException {
+        try {
+<span class="nc" id="L34">            User credentials = new ObjectMapper()</span>
+<span class="nc" id="L35">                    .readValue(req.getInputStream(), User.class);</span>
+
+<span class="nc" id="L37">            return authenticationManager.authenticate(</span>
+                    new UsernamePasswordAuthenticationToken(
+<span class="nc" id="L39">                            credentials.getUsername(),</span>
+<span class="nc" id="L40">                            credentials.getPassword(),</span>
+                            new ArrayList&lt;&gt;()));
+<span class="nc" id="L42">        } catch (IOException e) {</span>
+<span class="nc" id="L43">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest req,
+                                            HttpServletResponse res,
+                                            FilterChain chain,
+                                            Authentication auth) throws IOException, ServletException {
+
+<span class="nc" id="L53">        String token = JWT.create()</span>
+<span class="nc" id="L54">                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())</span>
+<span class="nc" id="L55">                .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))</span>
+<span class="nc" id="L56">                .sign(HMAC512(SecurityConstants.SECRET.getBytes()));</span>
+<span class="nc" id="L57">        res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);</span>
+<span class="nc" id="L58">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
